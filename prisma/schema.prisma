@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model comments {
+  comment_id   Int      @id @default(autoincrement())
+  user_id      Int
+  image_id     Int
+  content      String   @db.VarChar(255)
+  date_comment DateTime @db.DateTime(0)
+  users        users    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_1")
+  images       images   @relation(fields: [image_id], references: [image_id], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_2")
+
+  @@index([image_id], map: "image_id")
+  @@index([user_id], map: "user_id")
+}
+
+model create_image {
+  image_id     Int      @id
+  user_id      Int
+  created_date DateTime @db.DateTime(0)
+  images       images   @relation(fields: [image_id], references: [image_id], onDelete: NoAction, onUpdate: NoAction, map: "create_image_ibfk_1")
+  users        users    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "create_image_ibfk_2")
+
+  @@index([user_id], map: "user_id")
+}
+
+model detail_role {
+  detail_id   Int           @id @default(autoincrement())
+  name        String        @db.VarChar(50)
+  group_roles group_roles[]
+}
+
+model group_roles {
+  group_roles_id Int         @id @default(autoincrement())
+  detail_id      Int
+  role_id        Int
+  role           role        @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "group_roles_ibfk_1")
+  detail_role    detail_role @relation(fields: [detail_id], references: [detail_id], onDelete: NoAction, onUpdate: NoAction, map: "group_roles_ibfk_2")
+
+  @@index([detail_id], map: "detail_id")
+  @@index([role_id], map: "role_id")
+}
+
+model images {
+  image_id     Int           @id @default(autoincrement())
+  name         String        @db.VarChar(50)
+  link_url     String        @db.VarChar(150)
+  descr        String?       @db.VarChar(250)
+  user_id      Int
+  comments     comments[]
+  create_image create_image?
+  users        users         @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "images_ibfk_1")
+  saved_image  saved_image[]
+
+  @@index([user_id], map: "user_id")
+}
+
+model role {
+  role_id     Int           @id @default(autoincrement())
+  role_name   String        @db.VarChar(50)
+  group_roles group_roles[]
+}
+
+model saved_image {
+  saved_image_id Int      @id @default(autoincrement())
+  image_id       Int
+  user_id        Int
+  saved_date     DateTime @db.DateTime(0)
+  images         images   @relation(fields: [image_id], references: [image_id], onDelete: NoAction, onUpdate: NoAction, map: "saved_image_ibfk_1")
+  users          users    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "saved_image_ibfk_2")
+
+  @@index([image_id], map: "image_id")
+  @@index([user_id], map: "user_id")
+}
+
+model user_login {
+  user_login_id   Int     @id @default(autoincrement())
+  email           String  @db.VarChar(50)
+  password        String  @db.VarChar(150)
+  facebook_app_id String? @db.VarChar(50)
+  users           users[]
+}
+
+model users {
+  user_id       Int            @id @default(autoincrement())
+  avatar        String?        @db.VarChar(255)
+  full_name     String         @db.VarChar(50)
+  descr         String?        @db.VarChar(255)
+  own_website   String?        @db.VarChar(255)
+  age           Int
+  user_login_id Int
+  role_id       Int
+  isDeleted     DateTime?      @db.DateTime(0)
+  comments      comments[]
+  create_image  create_image[]
+  images        images[]
+  saved_image   saved_image[]
+  user_login    user_login     @relation(fields: [user_login_id], references: [user_login_id], onDelete: NoAction, onUpdate: NoAction, map: "users_ibfk_1")
+
+  @@index([user_login_id], map: "user_login_id")
+}
