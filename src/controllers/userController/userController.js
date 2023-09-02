@@ -1,11 +1,10 @@
 
-import { PrismaClient } from '@prisma/client'
 import { serverError, success, failure } from '../../config/response.js'
 import { createUser, hashPass, checkUserExit, checkHash, findUserById, uploadImg, oldAvatarHandler, excludeForArr, checkPageAvailable } from '../../services/user/userService.js'
-import fs from 'fs'
+import config from '../../config/prismaConfig.js'
 
+const prisma = config()
 
-const prisma = new PrismaClient()
 
 const registerHandler = async (req, res) => {
     try {
@@ -101,6 +100,7 @@ const updateProfileHandler = async (req, res) => {
 }
 
 const deleteUserHandler = async (req, res) => {
+    //traditional soft delete 
     try {
         const { userId } = req.params
         const deletedUser = await prisma.users.update({
@@ -119,6 +119,22 @@ const deleteUserHandler = async (req, res) => {
     }
 }
 
+const deleteUserHandlerV2 = async (req, res) => {
+    //using soft delete middleware
+    try {
+        const { userId } = req.params
+        const deletedUser = await prisma.users.delete({
+            where: {
+                user_id: +userId
+            }
+        })
+        success(res, deletedUser, "deleted")
+    } catch (error) {
+        console.log(error)
+        serverError(res)
+    }
+}
+
 const getListByPageHandler = async (req, res) => {
     try {
         const { pageIndex, pageSize } = req.params
@@ -130,11 +146,11 @@ const getListByPageHandler = async (req, res) => {
             }
         })
         const originData = await prisma.users.findMany({ where: { isDeleted: null } })
-        const pageAvailable = checkPageAvailable(originData,pageSize)
+        const pageAvailable = checkPageAvailable(originData, pageSize)
         success(res, { listUser, page: pageIndex, pageAvailable })
     } catch {
         serverError(res)
     }
 }
 
-export { registerHandler, loginHandler, getUserHandler, getUserByIdHandler, updateProfileHandler, deleteUserHandler, getListByPageHandler }
+export { registerHandler, loginHandler, getUserHandler, getUserByIdHandler, updateProfileHandler, deleteUserHandler, getListByPageHandler, deleteUserHandlerV2 }
