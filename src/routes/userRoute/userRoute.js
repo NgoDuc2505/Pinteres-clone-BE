@@ -1,5 +1,5 @@
 import express from 'express'
-import { registerHandler, loginHandler, getUserHandler, getUserByIdHandler, updateProfileHandler, deleteUserHandler, getListByPageHandler } from '../../controllers/userController/userController.js'
+import { registerHandler, loginHandler, getUserHandler, getUserByIdHandler, updateProfileHandler, deleteUserHandler, getListByPageHandler, deleteUserHandlerV2 } from '../../controllers/userController/userController.js'
 import multer from 'multer'
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -19,7 +19,7 @@ userRoute.post('/login', loginHandler)
 userRoute.get('/getListUser', getUserHandler)
 userRoute.get('/getUserById/:userId', getUserByIdHandler)
 userRoute.put('/updateProfile/:userId', upload.single('avatar'), updateProfileHandler)
-userRoute.delete('/deleteUser/:userId', deleteUserHandler),
+userRoute.delete('/deleteUser/:userId', deleteUserHandlerV2),
 userRoute.get('/getListByPage/:pageSize/:pageIndex', getListByPageHandler)
 
 export default userRoute
