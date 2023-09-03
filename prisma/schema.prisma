@@ -50,7 +50,7 @@ model group_roles {
 model images {
   image_id     Int           @id @default(autoincrement())
   name         String        @db.VarChar(50)
-  link_url     String        @db.VarChar(150)
+  link_url     String        @db.VarChar(255)
   descr        String?       @db.VarChar(250)
   user_id      Int
   comments     comments[]
