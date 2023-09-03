@@ -1,10 +1,8 @@
-
 import { serverError, success, failure } from '../../config/response.js'
 import { createUser, hashPass, checkUserExit, checkHash, findUserById, uploadImg, oldAvatarHandler, excludeForArr, checkPageAvailable } from '../../services/user/userService.js'
 import config from '../../config/prismaConfig.js'
 
 const prisma = config()
-
 
 const registerHandler = async (req, res) => {
     try {
@@ -130,7 +128,6 @@ const deleteUserHandlerV2 = async (req, res) => {
         })
         success(res, deletedUser, "deleted")
     } catch (error) {
-        console.log(error)
         serverError(res)
     }
 }
