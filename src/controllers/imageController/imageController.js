@@ -99,7 +99,7 @@ const changedImgHandler = async (req, res) => {
             })
             fs.unlinkSync(process.cwd() + `/public/imgStorage/${currentImg.link_url}`, (err) => { console.log(err) })
             uploadImg(file.filename)
-            success(res,{prevImg: currentImg.link_url, updatedImage: updatedImage.link_url})
+            success(res, { prevImg: currentImg.link_url, updatedImage: updatedImage.link_url })
             return
         }
         failure(res, 404, "You haven't imported your image!")
@@ -109,4 +109,21 @@ const changedImgHandler = async (req, res) => {
     }
 }
 
-export { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler }
+const deleteImgHandler = async (req, res) => {
+    try {
+        const { imgId } = req.params
+        const currentImg = await getCurrentImg(imgId)
+        const deletedImage = await prisma.images.delete({
+            where: {
+                image_id: +imgId
+            }
+        })
+        fs.unlinkSync(process.cwd() + `/public/imgStorage/${currentImg.link_url}`, (err) => { console.log(err) })
+        success(res, deletedImage)
+    } catch (err) {
+        console.log(err)
+        serverError(res)
+    }
+}
+
+export { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler, deleteImgHandler }
