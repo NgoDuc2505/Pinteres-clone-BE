@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { serverError, success, failure } from '../../config/response.js'
 import { uploadImg, checkIsValidMimetype, getCurrentImg } from '../../services/img/imgServices.js'
 import fs from 'fs'
+import { checkSaved, checkDidCreated } from '../../services/savedImg/savedImgService.js'
 
 const prisma = new PrismaClient()
 
@@ -131,7 +132,7 @@ const findImgByNameHandler = async (req, res) => {
     try {
         const { imgName } = req.body
         const result = await prisma.images.findMany({
-            where:{
+            where: {
                 name: {
                     contains: imgName
                 }
@@ -144,4 +145,76 @@ const findImgByNameHandler = async (req, res) => {
     }
 }
 
-export { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler, deleteImgHandler, findImgByNameHandler }
+const savedImgHandler = async (req, res) => {
+    try {
+        const { userId, imgId } = req.params
+        //check this image is your own
+        if (await checkDidCreated(userId, imgId)) {
+            failure(res, 400, "Can't save this image! [01]")
+            return
+        }
+        //check did you saved this img before
+        if (await checkSaved(userId, imgId)) {
+            failure(res, 400, "Can't save this image! [02]")
+            return
+        }
+        const result = await prisma.saved_image.create({
+            data: {
+                saved_date: new Date(),
+                image_id: +imgId,
+                user_id: +userId
+            }
+        })
+        success(res, result)
+    } catch (err) {
+        console.log(err)
+        serverError(res)
+    }
+}
+
+const removeSavedHandler = async (req, res) => {
+    try {
+        const { savedId } = req.params
+        const removeSaved = await prisma.saved_image.delete({
+            where: {
+                saved_image_id: +savedId
+            }
+        })
+        success(res, removeSaved, "removed")
+    } catch {
+        serverError(res)
+    }
+}
+
+const getListSavedImgByUserHandler = async (req, res) => {
+    try {
+        const { userId } = req.params
+        const listData = await prisma.saved_image.findMany({
+            where: {
+                user_id : +userId
+            },
+            include:{
+                images: {
+                    select:{
+                        link_url: true,
+                        descr: true,
+                        name: true,
+                        created_date: true,
+                        users: {
+                            select:{
+                                user_id: true,
+                                full_name: true,
+                                avatar: true
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        success(res,listData)
+    } catch {
+        serverError(res)
+    }
+}
+
+export { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler, deleteImgHandler, findImgByNameHandler, savedImgHandler, removeSavedHandler, getListSavedImgByUserHandler }
