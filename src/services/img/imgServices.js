@@ -1,6 +1,8 @@
+import { PrismaClient } from '@prisma/client';
 import compress_images from 'compress-images'
 import fs from 'fs'
 
+const prisma = new PrismaClient()
 
 const uploadImg = async (fileName) => {
     await compress_images(`public/image/${fileName}`, 'public/imgStorage/', { compress_force: false, statistic: true, autoupdate: true }, false,
@@ -27,4 +29,13 @@ const checkIsValidMimetype = (file) => {
     return true
 }
 
-export { uploadImg, checkIsValidMimetype }
+const getCurrentImg = async (imgId) => {
+    const result = await prisma.images.findUnique({
+        where: {
+            image_id: +imgId
+        }
+    })
+    return result
+}
+
+export { uploadImg, checkIsValidMimetype, getCurrentImg }
