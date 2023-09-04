@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { serverError, success, failure } from '../../config/response.js'
+import { uploadImg, checkIsValidMimetype } from '../../services/img/imgServices.js'
+import fs from 'fs'
 
 const prisma = new PrismaClient()
 
@@ -27,6 +29,10 @@ const postImgHandler = async (req, res) => {
         const { name, descr } = req.body
         const file = req.file
         if (file) {
+            if(!checkIsValidMimetype(file,res)){
+                failure(res, 400, "File is not a valid image mimetype")
+                return
+            }
             const createdPost = await prisma.images.create({
                 data: {
                     user_id: +userId,
@@ -35,6 +41,7 @@ const postImgHandler = async (req, res) => {
                     name
                 }
             })
+            uploadImg(file.filename)
             success(res, createdPost)
             return
         }
