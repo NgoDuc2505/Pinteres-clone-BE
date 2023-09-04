@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
 }
 
 datasource db {
@@ -53,6 +54,7 @@ model images {
   link_url     String        @db.VarChar(255)
   descr        String?       @db.VarChar(250)
   user_id      Int
+  created_date DateTime?     @db.DateTime(0)
   comments     comments[]
   create_image create_image?
   users        users         @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "images_ibfk_1")

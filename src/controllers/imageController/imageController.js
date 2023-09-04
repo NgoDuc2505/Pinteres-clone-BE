@@ -38,7 +38,8 @@ const postImgHandler = async (req, res) => {
                     user_id: +userId,
                     link_url: file?.filename,
                     descr,
-                    name
+                    name,
+                    created_date: new Date()
                 }
             })
             uploadImg(file.filename)
@@ -126,4 +127,21 @@ const deleteImgHandler = async (req, res) => {
     }
 }
 
-export { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler, deleteImgHandler }
+const findImgByNameHandler = async (req, res) => {
+    try {
+        const { imgName } = req.body
+        const result = await prisma.images.findMany({
+            where:{
+                name: {
+                    contains: imgName
+                }
+            }
+        })
+        success(res, result)
+    } catch (error) {
+        console.log(error)
+        serverError(res)
+    }
+}
+
+export { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler, deleteImgHandler, findImgByNameHandler }
