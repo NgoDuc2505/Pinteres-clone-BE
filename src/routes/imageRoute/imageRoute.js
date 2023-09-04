@@ -1,5 +1,5 @@
 import express from 'express'
-import { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler } from '../../controllers/imageController/imageController.js'
+import { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler, deleteImgHandler } from '../../controllers/imageController/imageController.js'
 import multer from 'multer'
 import storage from '../../config/multerConfig.js'
 const upload = multer({ storage })
@@ -10,7 +10,7 @@ imageRoute.get('/getListImg', getListImgHandler)
 imageRoute.post('/postImg/:userId', upload.single("img"), postImgHandler)
 imageRoute.put('/editImg/:imgId', editImgContentHandler)
 imageRoute.put('/changedImg/:imgId', upload.single("imgChange"), changedImgHandler)
-
+imageRoute.delete('/deleteImg/:imgId', deleteImgHandler)
 
 
 
