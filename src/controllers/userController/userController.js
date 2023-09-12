@@ -1,6 +1,8 @@
 import { serverError, success, failure } from '../../config/response.js'
-import { createUser, hashPass, checkUserExit, checkHash, findUserById, uploadImg, oldAvatarHandler, excludeForArr, checkPageAvailable } from '../../services/user/userService.js'
+import { createUser, hashPass, checkUserExit, checkHash, findUserById, uploadImg, oldAvatarHandler, excludeForArr, checkPageAvailable, getRoleByEmail } from '../../services/user/userService.js'
 import config from '../../config/prismaConfig.js'
+import { createToken, verifyToken } from '../../services/jwt/JWTservices.js'
+
 
 const prisma = config()
 
@@ -27,13 +29,20 @@ const loginHandler = async (req, res) => {
         const checkingExitUser = await checkUserExit(email)
         if (checkingExitUser.length > 0) {
             const hashPass = checkingExitUser[0].password
-            checkHash(password, hashPass)
-                ? success(res, {
-                    token: "",
-                    role: "role"
+            if (checkHash(password, hashPass)) {
+                const roleUser = await getRoleByEmail(checkingExitUser[0].email)
+                const payload = {
+                    email: checkingExitUser[0].email,
+                    role: roleUser
+                }
+                const token = createToken(payload)
+                success(res, {
+                    token: token,
+                    role: roleUser
                 })
-                : failure(res, 404, "incorrect password!")
-
+                return
+            }
+            failure(res, 404, "incorrect password!")
             return
         }
         failure(res, 404, "incorrect email!")
