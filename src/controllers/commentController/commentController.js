@@ -79,16 +79,16 @@ const deleteCommentHandler = async (req, res) => {
     try {
         const { commentId } = req.params
         const { userId } = req.body
-        if(await checkAbilityToUpdate(commentId, userId)){
+        if (await checkAbilityToUpdate(commentId, userId)) {
             const deletedComment = await prisma.comments.delete({
-                where:{
+                where: {
                     comment_id: +commentId
                 }
             })
-            success(res,deletedComment)
+            success(res, deletedComment)
             return
         }
-        failure(res,400,"this user can not delete this comment!")
+        failure(res, 400, "this user can not delete this comment!")
     } catch {
         serverError(res)
     }

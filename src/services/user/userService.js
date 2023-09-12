@@ -26,8 +26,8 @@ const checkUserExit = async (email) => {
 }
 
 const excludeForArr = (user, keys) => {
-    const excludeResult = user.map((item)=>{
-         return Object.fromEntries(
+    const excludeResult = user.map((item) => {
+        return Object.fromEntries(
             Object.entries(item).filter(([key]) => !keys.includes(key))
         );
     })
@@ -36,8 +36,8 @@ const excludeForArr = (user, keys) => {
 
 const exclude = (user, keys) => {
     return Object.fromEntries(
-       Object.entries(user).filter(([key]) => !keys.includes(key))
-   );
+        Object.entries(user).filter(([key]) => !keys.includes(key))
+    );
 }
 
 const createUser = async (hashPassword, email, age, fullName) => {
@@ -64,8 +64,8 @@ const createUser = async (hashPassword, email, age, fullName) => {
                 user_login_id: loginId
             }
         })
-        const userLoginExclude = exclude(userLogin,['facebook_app_id','password'])
-        const userInfoExclude = exclude(userInfo,['isDeleted'])
+        const userLoginExclude = exclude(userLogin, ['facebook_app_id', 'password'])
+        const userInfoExclude = exclude(userInfo, ['isDeleted'])
         const dataResult = {
             user: userInfoExclude,
             loginInfo: userLoginExclude
@@ -85,8 +85,8 @@ const findUserById = async (id) => {
                 isDeleted: null
             }
         })
-        if(userId){
-            const result = exclude(userId,['isDeleted'])
+        if (userId) {
+            const result = exclude(userId, ['isDeleted'])
             return result
         }
         return undefined
@@ -118,9 +118,41 @@ const oldAvatarHandler = (fileName) => {
     }
 }
 
-const checkPageAvailable = (originData,pageSize) =>{
+const checkPageAvailable = (originData, pageSize) => {
     return Math.ceil(originData.length / +pageSize)
 }
 
+const getRoleByEmail = async (email) => {
+    try {
+        const loginUserData = await checkUserExit(email)
+        const dataUser = await prisma.users.findMany({
+            where: {
+                user_login_id: loginUserData[0].user_login_id
+            },
+        })
+        const data = await prisma.group_roles.findMany({
+            where: {
+                role_id: dataUser[0].role_id
+            },
+            include:{
+                detail_role:{
+                    select:{
+                        name: true
+                    }
+                },
+                role:{
+                    select:{
+                        role_name: true
+                    }
+                }
+            }
+        })
+        const arrayRole = data.map((item)=>{return item.detail_role.name})
+        return {roleName: data[0].role.role_name, roleList: arrayRole}
+    } catch (error) {
+        console.log(error)
+    }
+}
 
-export { hashPass, createUser, checkUserExit, checkHash, findUserById, uploadImg, oldAvatarHandler, excludeForArr, checkPageAvailable}
+
+export { hashPass, createUser, checkUserExit, checkHash, findUserById, uploadImg, oldAvatarHandler, excludeForArr, checkPageAvailable, getRoleByEmail }
