@@ -2,7 +2,7 @@ import { serverError, success, failure } from '../../config/response.js'
 import { createUser, hashPass, checkUserExit, checkHash, findUserById, uploadImg, oldAvatarHandler, excludeForArr, checkPageAvailable, getRoleByEmail } from '../../services/user/userService.js'
 import config from '../../config/prismaConfig.js'
 import { createToken, verifyToken } from '../../services/jwt/JWTservices.js'
-
+import cookieParser from 'cookie-parser'
 
 const prisma = config()
 
@@ -24,6 +24,7 @@ const registerHandler = async (req, res) => {
 }
 
 const loginHandler = async (req, res) => {
+    console.log(req.path)
     try {
         const { email, password } = req.body
         const checkingExitUser = await checkUserExit(email)
@@ -36,6 +37,7 @@ const loginHandler = async (req, res) => {
                     role: roleUser
                 }
                 const token = createToken(payload)
+                res.cookie("token", token, { httpOnly: true, signed: true, path: "/", secure: true, maxAge: 60*60*1000 })
                 success(res, {
                     token: token,
                     role: roleUser
@@ -46,7 +48,8 @@ const loginHandler = async (req, res) => {
             return
         }
         failure(res, 404, "incorrect email!")
-    } catch {
+    } catch (error) {
+        console.log(error)
         serverError(res)
     }
 }

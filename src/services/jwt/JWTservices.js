@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
+import { failure } from '../../config/response.js'
 dotenv.config()
 
 const createToken = (data) => {
@@ -9,21 +10,34 @@ const createToken = (data) => {
         result = token
         return result
     } catch (error) {
-        console.log(error)
         return result
     }
 }
 
 const verifyToken = (token) => {
     let result = null
-    try{
-        const decode = jwt.verify(token,process.env.PRIVATE_KEY)
+    try {
+        const decode = jwt.verify(token, process.env.PRIVATE_KEY)
         result = decode
         return result
-    }catch(error){
-        console.log(error)
+    } catch (error) {
         return result
     }
 }
 
-export { createToken, verifyToken }
+const checkUserDidLogin = (req,res,next) => {
+    try{
+        const cookie = req.signedCookies
+        if(cookie.token){
+            const decode = verifyToken(cookie.token)
+            console.log(decode)
+            next()
+            return 
+        }
+        failure(res,400,"You have to login!")
+    }catch(error){
+        console.log(error)
+    }
+}
+
+export { createToken, verifyToken, checkUserDidLogin }
