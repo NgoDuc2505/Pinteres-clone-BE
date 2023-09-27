@@ -1,7 +1,11 @@
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import { failure } from '../../config/response.js'
+import { getRoleByEmail } from '../user/userService.js'
+import { PrismaClient } from '@prisma/client'
 dotenv.config()
+
+const prisma = new PrismaClient()
 
 const createToken = (data) => {
     let result = null
@@ -25,19 +29,60 @@ const verifyToken = (token) => {
     }
 }
 
-const checkUserDidLogin = (req,res,next) => {
-    try{
-        const cookie = req.signedCookies
-        if(cookie.token){
-            const decode = verifyToken(cookie.token)
-            console.log(decode)
+const noneSecurePath = (path) => {
+    const nonePath = ['/login', '/register']
+    if (nonePath.includes(path)) {
+        return true;
+    }
+    return false
+}
+
+const checkUserDidLogin = (req, res, next) => {
+    try {
+        if (noneSecurePath(req.path)) {
+            console.log(">>>>>> nonsecurePath: ", req.path)
             next()
-            return 
+            return
         }
-        failure(res,400,"You have to login!")
-    }catch(error){
+        const cookie = req.signedCookies
+        if (cookie.token) {
+            const decode = verifyToken(cookie.token)
+            req.userData = decode
+            console.log(req.userData)
+            next()
+            return
+        }
+        failure(res, 400, "You have to login!")
+    } catch (error) {
         console.log(error)
     }
 }
 
-export { createToken, verifyToken, checkUserDidLogin }
+const authentication = async (req, res, next) => {
+    try {
+        if (noneSecurePath(req.path)) {
+            // console.log(">>>>>> nonsecurePath: ", req.path)
+            next()
+            return
+        }
+        const userAuthen = req.userData
+        const emailFromUserData = userAuthen.email
+        const getRoleFromEmail = await getRoleByEmail(emailFromUserData)
+        const listOfRole = getRoleFromEmail.roleList.join(",")
+        const fullListRoleArray = listOfRole.split(",")
+        const customPath = "/"+ req.path.split("/")[1]
+        // console.log(">>>> log req user: ", getRoleFromEmail)
+        // console.log(">>>> list role", fullListRoleArray)
+        // console.log(">>>> current path: ", customPath)
+        if(fullListRoleArray.some((item)=>item === customPath)){
+            console.log(">>> This role have access!!")
+            next()
+            return
+        }
+        failure(res, 400, "You are not permitted !")
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export { createToken, verifyToken, checkUserDidLogin, authentication }

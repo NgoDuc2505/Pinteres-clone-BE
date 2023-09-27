@@ -24,7 +24,6 @@ const registerHandler = async (req, res) => {
 }
 
 const loginHandler = async (req, res) => {
-    console.log(req.path)
     try {
         const { email, password } = req.body
         const checkingExitUser = await checkUserExit(email)
@@ -56,6 +55,7 @@ const loginHandler = async (req, res) => {
 
 const getUserHandler = async (req, res) => {
     try {
+        console.log(req.signedCookies.token)
         const userList = await prisma.users.findMany({
             where: {
                 isDeleted: null

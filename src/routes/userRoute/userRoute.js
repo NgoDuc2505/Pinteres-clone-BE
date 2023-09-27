@@ -1,7 +1,7 @@
 import express from 'express'
 import { registerHandler, loginHandler, getUserHandler, getUserByIdHandler, updateProfileHandler, deleteUserHandler, getListByPageHandler, deleteUserHandlerV2 } from '../../controllers/userController/userController.js'
 import multer from 'multer'
-import { checkUserDidLogin } from '../../services/jwt/JWTservices.js'
+import { authentication, checkUserDidLogin } from '../../services/jwt/JWTservices.js'
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'public/image')
@@ -15,6 +15,8 @@ const upload = multer({ storage })
 
 
 const userRoute = express.Router()
+userRoute.all('*',checkUserDidLogin,authentication)
+
 userRoute.post('/register', registerHandler)
 userRoute.post('/login', loginHandler)
 
