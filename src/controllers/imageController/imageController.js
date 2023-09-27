@@ -24,6 +24,31 @@ const getListImgHandler = async (req, res) => {
     }
 }
 
+const getImgDetailHandler = async (req, res) => {
+    try {
+        const { imgId } = req.params
+        const data = await prisma.images.findUnique({
+            where: {
+                image_id: +imgId
+            },
+            include: {
+                users: {
+                    select: {
+                        full_name: true,
+                        avatar: true,
+                        user_id: true
+                    }
+                }
+
+            }
+        })
+        success(res, data)
+    } catch (error) {
+        console.log(error)
+        serverError(res)
+    }
+}
+
 const postImgHandler = async (req, res) => {
     try {
         const { userId } = req.params
@@ -191,17 +216,17 @@ const getListSavedImgByUserHandler = async (req, res) => {
         const { userId } = req.params
         const listData = await prisma.saved_image.findMany({
             where: {
-                user_id : +userId
+                user_id: +userId
             },
-            include:{
+            include: {
                 images: {
-                    select:{
+                    select: {
                         link_url: true,
                         descr: true,
                         name: true,
                         created_date: true,
                         users: {
-                            select:{
+                            select: {
                                 user_id: true,
                                 full_name: true,
                                 avatar: true
@@ -211,10 +236,10 @@ const getListSavedImgByUserHandler = async (req, res) => {
                 }
             }
         })
-        success(res,listData)
+        success(res, listData)
     } catch {
         serverError(res)
     }
 }
 
-export { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler, deleteImgHandler, findImgByNameHandler, savedImgHandler, removeSavedHandler, getListSavedImgByUserHandler }
+export { getListImgHandler, postImgHandler, editImgContentHandler, changedImgHandler, deleteImgHandler, findImgByNameHandler, savedImgHandler, removeSavedHandler, getListSavedImgByUserHandler, getImgDetailHandler }

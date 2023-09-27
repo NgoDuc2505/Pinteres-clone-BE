@@ -34,6 +34,7 @@ model create_image {
 model detail_role {
   detail_id   Int           @id @default(autoincrement())
   name        String        @db.VarChar(50)
+  roles       String?       @db.VarChar(255)
   group_roles group_roles[]
 }
 

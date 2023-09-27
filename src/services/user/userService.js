@@ -137,7 +137,7 @@ const getRoleByEmail = async (email) => {
             include:{
                 detail_role:{
                     select:{
-                        name: true
+                        roles: true
                     }
                 },
                 role:{
@@ -147,7 +147,7 @@ const getRoleByEmail = async (email) => {
                 }
             }
         })
-        const arrayRole = data.map((item)=>{return item.detail_role.name})
+        const arrayRole = data.map((item)=>{return item.detail_role.roles})
         return {roleName: data[0].role.role_name, roleList: arrayRole}
     } catch (error) {
         console.log(error)
