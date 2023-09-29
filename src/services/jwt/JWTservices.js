@@ -40,7 +40,6 @@ const noneSecurePath = (path) => {
 const checkUserDidLogin = (req, res, next) => {
     try {
         if (noneSecurePath(req.path)) {
-            console.log(">>>>>> nonsecurePath: ", req.path)
             next()
             return
         }
@@ -48,7 +47,6 @@ const checkUserDidLogin = (req, res, next) => {
         if (cookie.token) {
             const decode = verifyToken(cookie.token)
             req.userData = decode
-            console.log(req.userData)
             next()
             return
         }
@@ -61,7 +59,6 @@ const checkUserDidLogin = (req, res, next) => {
 const authentication = async (req, res, next) => {
     try {
         if (noneSecurePath(req.path)) {
-            // console.log(">>>>>> nonsecurePath: ", req.path)
             next()
             return
         }
@@ -71,11 +68,7 @@ const authentication = async (req, res, next) => {
         const listOfRole = getRoleFromEmail.roleList.join(",")
         const fullListRoleArray = listOfRole.split(",")
         const customPath = "/"+ req.path.split("/")[1]
-        // console.log(">>>> log req user: ", getRoleFromEmail)
-        // console.log(">>>> list role", fullListRoleArray)
-        // console.log(">>>> current path: ", customPath)
         if(fullListRoleArray.some((item)=>item === customPath)){
-            console.log(">>> This role have access!!")
             next()
             return
         }
